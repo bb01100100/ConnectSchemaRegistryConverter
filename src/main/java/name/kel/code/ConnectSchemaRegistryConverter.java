@@ -1,4 +1,4 @@
-package io.confluent.ps.apac;
+package name.kel.code;
 
 import io.confluent.connect.avro.AvroConverterConfig;
 import io.confluent.connect.avro.AvroData;
@@ -21,7 +21,6 @@ import java.time.*;
 
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalField;
 import java.util.*;
 import java.util.Date;
 import java.util.regex.Matcher;
@@ -42,7 +41,7 @@ import org.apache.kafka.connect.storage.Converter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CsvConverter implements Converter {
+public class ConnectSchemaRegistryConverter implements Converter {
     public SchemaRegistryClient schemaRegistry;
     private Serializer serializer;
     private Deserializer deserializer;
@@ -51,7 +50,7 @@ public class CsvConverter implements Converter {
 
     private HashMap<String, Schema> subjectCache;
 
-    private static final Logger log = LoggerFactory.getLogger(CsvConverter.class);
+    private static final Logger log = LoggerFactory.getLogger(ConnectSchemaRegistryConverter.class);
 
     final String DATETIME_REGEX = "(?<datetime>(?<date>(?:(?<year>\\d{4})-(?<month>\\d{1,2})-(?<day>\\d{1,2}))|" +
             "(?:(?<day2>\\d{1,2})\\/(?<month2>\\d{1,2})\\/(?<year2>\\d{4}))|" +
@@ -64,10 +63,10 @@ public class CsvConverter implements Converter {
 
 
 
-    public CsvConverter() {
+    public ConnectSchemaRegistryConverter() {
     }
 
-    public CsvConverter(SchemaRegistryClient client) {
+    public ConnectSchemaRegistryConverter(SchemaRegistryClient client) {
         this.schemaRegistry = client;
     }
 

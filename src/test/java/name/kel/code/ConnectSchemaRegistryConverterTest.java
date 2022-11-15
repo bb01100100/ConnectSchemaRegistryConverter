@@ -1,17 +1,13 @@
-package io.confluent.ps.apac;
+package name.kel.code;
 
 
 import io.confluent.connect.avro.AvroData;
 import io.confluent.connect.avro.AvroDataConfig;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.Struct;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.event.Level;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,16 +22,16 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
 
-class CsvConverterTest {
+class ConnectSchemaRegistryConverterTest {
 
-    private static final Logger log = LoggerFactory.getLogger(CsvConverterTest.class);
+    private static final Logger log = LoggerFactory.getLogger(ConnectSchemaRegistryConverterTest.class);
 
     private Schema incoming;
     private Schema target;
 
-    private CsvConverter csv;
+    private ConnectSchemaRegistryConverter converter;
 
-    CsvConverterTest() {
+    ConnectSchemaRegistryConverterTest() {
         prepSchemas();
     }
 
@@ -80,8 +76,8 @@ class CsvConverterTest {
         target = avroData.toConnectSchema(temp_avroSchema);
 
         log.info("Creating new CsvConverter instance");
-        csv = new CsvConverter();
-        csv.configure(props, false);
+        converter = new ConnectSchemaRegistryConverter();
+        converter.configure(props, false);
     }
 
 
@@ -114,7 +110,7 @@ class CsvConverterTest {
 
 
                 // Map the incoming string fields to correct Schema Registry data types.
-                Struct mappedStruct = csv.mapOldStructFieldsToTargetSchema((Struct) value, target);
+                Struct mappedStruct = converter.mapOldStructFieldsToTargetSchema((Struct) value, target);
 
                 log.info("Have successfully mapped incoming string struct to correct target Schema data types. Will validate field types.");
 
@@ -172,7 +168,7 @@ class CsvConverterTest {
 
 
             // Map the incoming string fields to correct Schema Registry data types.
-            Struct mappedStruct = csv.mapOldStructFieldsToTargetSchema((Struct) value, target);
+            Struct mappedStruct = converter.mapOldStructFieldsToTargetSchema((Struct) value, target);
 
             log.info("Have successfully mapped incoming string struct to correct target Schema data types. Will validate field types.");
 
@@ -231,7 +227,7 @@ class CsvConverterTest {
     @Test
     void validateOptionalFields() {
 
-        target = CsvConverter.makeAllFieldsOptional(target);
+        target = ConnectSchemaRegistryConverter.makeAllFieldsOptional(target);
 
         try {
 
@@ -256,7 +252,7 @@ class CsvConverterTest {
 
 
             // Map the incoming string fields to correct Schema Registry data types.
-            Struct mappedStruct = csv.mapOldStructFieldsToTargetSchema((Struct) value, target);
+            Struct mappedStruct = converter.mapOldStructFieldsToTargetSchema((Struct) value, target);
 
             log.info("Have successfully mapped incoming string struct to correct target Schema data types. Will validate field types.");
 
@@ -276,7 +272,7 @@ class CsvConverterTest {
 
     public static void main(String argv[]) {
 
-        CsvConverter csv = new CsvConverter();
+        ConnectSchemaRegistryConverter registryConverter = new ConnectSchemaRegistryConverter();
 
         // Timestamp tests
         for (String ts : new String[]{
@@ -288,7 +284,7 @@ class CsvConverterTest {
             log.info(String.format("Timestamp micros is %s",
                     ts));
             log.info(String.format("Converted to this:  %s",
-                    csv.dateFromDateString(ts).truncatedTo(ChronoUnit.MICROS)));
+                    registryConverter.dateFromDateString(ts).truncatedTo(ChronoUnit.MICROS)));
 
          }
 
@@ -302,16 +298,16 @@ class CsvConverterTest {
             log.info(String.format("Timestamp micros is %s",
                     ts));
             log.info(String.format("Converted to this:  %s",
-                    csv.dateFromDateString(ts)));
+                    registryConverter.dateFromDateString(ts)));
 
             log.info(String.format("          truncated to micros:   %-33s",
-                    csv.dateFromDateString(ts).truncatedTo(ChronoUnit.MICROS)));
+                    registryConverter.dateFromDateString(ts).truncatedTo(ChronoUnit.MICROS)));
 
             log.info(String.format("          truncated to millis:   %-33s",
-                    csv.dateFromDateString(ts).truncatedTo(ChronoUnit.MILLIS)));
+                    registryConverter.dateFromDateString(ts).truncatedTo(ChronoUnit.MILLIS)));
 
             log.info(String.format("          truncated to seconds:  %-32s",
-                    csv.dateFromDateString(ts).truncatedTo(ChronoUnit.SECONDS)));
+                    registryConverter.dateFromDateString(ts).truncatedTo(ChronoUnit.SECONDS)));
 
         }
     }
@@ -319,7 +315,7 @@ class CsvConverterTest {
     Properties getConnectionProperties() {
 
         Properties props = new Properties();
-        try (InputStream inputStream = CsvConverterTest.class.getResourceAsStream("/client.properties")) {
+        try (InputStream inputStream = ConnectSchemaRegistryConverterTest.class.getResourceAsStream("/client.properties")) {
             props.load(inputStream);
         } catch (IOException e) {
             e.printStackTrace(System.out);
