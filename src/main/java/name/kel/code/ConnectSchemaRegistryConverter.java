@@ -17,6 +17,7 @@ import org.apache.kafka.common.errors.InvalidConfigurationException;
 import org.apache.kafka.common.errors.SerializationException;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.*;
 
 import java.time.temporal.ChronoField;
@@ -257,6 +258,23 @@ public class ConnectSchemaRegistryConverter implements Converter {
                             case "org.apache.kafka.connect.data.Decimal":
                                 try {
                                     newStruct.put(f.name(), new BigDecimal(val));
+                                    BigDecimal convertedVal = new BigDecimal(val);
+                                    // Decimal types have a scale value
+                                    int bigDecimalScale = 0;
+                                    if (schemaField.schema().parameters().containsKey("scale")) {
+                                        bigDecimalScale = Integer.valueOf(schemaField.schema().parameters().get("scale"));
+                                    }
+
+                                    if (convertedVal.scale() > bigDecimalScale) {
+                                        throw new NumberFormatException(
+                                            "Decimal value " + convertedVal + " with scale of " 
+                                            + convertedVal.scale() + " greater than Schema-defined scale of " 
+                                            + bigDecimalScale);
+                                    } else if (convertedVal.scale() < bigDecimalScale) {
+                                        log.trace("Setting cale for Decimal field " + f.name() + " from " + convertedVal.scale() + " to " + bigDecimalScale);
+                                    }
+                                    convertedVal = convertedVal.setScale(bigDecimalScale, RoundingMode.FLOOR);
+                                    
                                 } catch (Exception e) {
                                     log.error("Exception converting from String to BigDecimal: " + e.toString());
                                 }
